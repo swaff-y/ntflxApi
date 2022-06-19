@@ -1,0 +1,20 @@
+#!/bin/bash
+
+SCRIPT="cd backend; npm i; mkdir logs; cd logs; touch logger.log; cd ..; ./stopServer; ./startServer"
+USERNAME=swaff
+HOSTNAME=raspberrypi
+
+echo "Deploying API...."
+scp ~/sei/projects/ntflx/backEnd/index.js swaff@raspberrypi:~/backend/
+scp ~/sei/projects/ntflx/backEnd/logger.js swaff@raspberrypi:~/backend/
+scp ~/sei/projects/ntflx/backEnd/package.json swaff@raspberrypi:~/backend/
+scp ~/sei/projects/ntflx/backEnd/package-lock.json swaff@raspberrypi:~/backend/
+scp ~/sei/projects/ntflx/backEnd/startServer swaff@raspberrypi:~/backend/
+scp ~/sei/projects/ntflx/backEnd/stopServer swaff@raspberrypi:~/backend/
+scp -r ~/sei/projects/ntflx/backEnd/models swaff@raspberrypi:~/backend/
+scp -r ~/sei/projects/ntflx/backEnd/routes swaff@raspberrypi:~/backend/
+
+echo "ssh into box and start server"
+ssh -l ${USERNAME} ${HOSTNAME} "${SCRIPT}"
+
+echo "Done"

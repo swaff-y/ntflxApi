@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo "Stopping Server..."
+killall -9 node
+echo "Server Stopped!"

@@ -21,6 +21,10 @@ const ConfigSchema = new mongoose.Schema(
             type: String,
             required: true
         },
+        display: {
+            type: Number,
+            default: null
+        }
     },
     {
         timestamps: true

@@ -28,6 +28,7 @@ function categories(arr){
             obj.file = sp[2];
             obj.url = item.Key;
             obj.tag = item.ETag;
+            obj.display = null; //Delete me
         }
 
         if(sp.length === 4)
@@ -37,6 +38,7 @@ function categories(arr){
             obj.name = sp[2]
             obj.url = item.Key;
             obj.tag = item.ETag;
+            obj.display = null; //Delete me
         }
 
         if(obj.category && obj.file) ret.push(obj);
@@ -45,6 +47,53 @@ function categories(arr){
 }
 
 let gotten = null;
+
+function randomArray(arr, length) {
+
+    if(arr.length === 0) return;
+
+    function getRandomInt(min, max) {
+      min = Math.ceil(min);
+      max = Math.floor(max);
+      return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
+    }
+
+    const retArr = [];
+    let i = 0;
+    
+    while (i < length){
+        const int = getRandomInt(0,arr.length);
+
+        if(i == 0){
+            retArr?.push(arr[int]);
+            i++;
+        } else {
+            const obj = arr[int];
+            if(!retArr?.find((item)=>{ return item == obj })) {
+                retArr?.push(obj);
+                i++;
+            }
+        }
+    }
+    return retArr;
+}
+
+function uniqueArray(arr) {
+    const retArr = [];
+
+    arr.forEach((item)=>{
+        if(!retArr.find((it)=>{ return it === item.name })) {
+            retArr.push(item.name);
+        }
+    });
+    return retArr;
+}
+
+function getObjs(arr, name) {
+    return arr.filter((item)=>{
+        return item.name === name;
+    })
+}
 
 //Get Config
 router.get("/build", async (req, res) => {
@@ -60,21 +109,22 @@ router.get("/build", async (req, res) => {
                     if(!rec){
                         const conf = new Config(item);
                         saved = await conf.save();
-                        if(saved) retArr.push(saved)
+                        console.log("Rec",saved);
                     } else {
-                        saved = await Config.findByIdAndUpdate(
-                            rec._id,
-                            { $set: rec }, 
+                        saved = await Config.findOneAndUpdate(
+                            {tag: item.tag },
+                            { ...item }, 
                             { new: true }
                         );
-                        if(saved) retArr.push(saved);
-                        console.log("Else", saved);
+                        console.log("No Rec",saved);
                     }
                 }
-                catch(err){console.log(err)}
+                catch(err){
+                    log.error(`500 || ${err || "Internal server error"} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+                }
             })
 
-            res.status(200).json({success: "true", retArr});
+            res.status(200).json({success: "true"});
             gotten = obj;
             log.info(`200 || "Config Sent" - ${req.method} - ${req.ip}`);
     }
@@ -88,14 +138,13 @@ router.get("/build", async (req, res) => {
 router.get("/stars" , async (req, res) => {
     // const qCategory = req.query.category;
     try{
-        let products;
+        let stars;
 
-        // products = await Product.find().populate("categories");
         stars = await Config.find({category: "stars"})
 
         if(stars)
         {
-            log.info(`200 || "Got All Stars" - ${req.method} - ${req.ip} - ${req?.query?.category ? "category:" + req?.query?.category : "category: none"}`);
+            log.info(`200 || "Got All Stars" - ${req.method} - ${req.ip} - "category: stars"`);
             res.status(200).json(stars);
         } else {
             throw "Stars does not exist";
@@ -105,5 +154,66 @@ router.get("/stars" , async (req, res) => {
         res.status(500).json({success: false, "error": err});
     }
 });
+
+//GET display
+router.get("/stars/display" , async (req, res) => {
+    try{
+        let display,
+            dateStamp = Date.now();
+
+        display = await Config.find({category: "stars", display: {$gte: dateStamp}});
+
+        if(!display){
+            throw "Stars does not exist";
+        }
+        else if(display.length > 0)
+        {
+            log.info(`200 || "Got display Stars" - ${req.method} - ${req.ip} - "category: starsDisplay"`);
+            res.status(200).json(display);
+        } 
+        else {
+            log.info(`"Creating a new display" - ${req.method} - ${req.ip} - "category: starsDisplay"`);
+            stars = await Config.find({category: "stars"});
+            const uniqueArr = uniqueArray(stars || []);
+            const randomArr = randomArray(uniqueArr, 8);
+
+            const retArr = [];
+            randomArr.forEach(async (item)=>{
+                const objsArr = getObjs(stars, item);
+                objsArr.forEach(async (it)=>{
+                    // console.log("=>" + it.name);
+                    const future = dateStamp + 86400000;
+                    const updatedObj = await Config.findOneAndUpdate({_id: it.id}, { display: future }, {new:true});
+                    // console.log("<=" + updatedObj.name);
+                    retArr.push(updatedObj)
+                    if(retArr.length == (objsArr.length * randomArr.length)){
+                        log.info(`200 || "Got display Stars" - ${req.method} - ${req.ip} - "category: starsDisplay"`);
+                        res.status(200).json(retArr);
+                    }
+                });
+            });
+        }
+    } catch (err) {
+        log.error(`500 || ${err || "Internal server error"} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+        res.status(500).json({success: false, "error": err});
+    }
+});
+
+//SET display
+router.put("/stars/display/:id", async (req, res) => {
+    try{
+        if(!req.body) throw "No Request Body";
+
+        const confObj = await Config.findByIdAndUpdate(req.params.id, {
+            $set: req.body
+        },{new: true});
+
+        log.info(`200 || "Updated User" - ${req.method} - ${req.ip}`);
+        res.status(200).json({success: true, ...updatedUser});
+    } catch (err) {
+        log.error(`500 || ${err || "Internal server error"} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+        res.status(500).json({success: false, "error": "Internal server Error"});
+    }
+})
 
 module.exports = router;
