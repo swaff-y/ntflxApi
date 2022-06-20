@@ -109,14 +109,14 @@ router.get("/build", async (req, res) => {
                     if(!rec){
                         const conf = new Config(item);
                         saved = await conf.save();
-                        console.log("Rec",saved);
+                        // console.log("Rec",saved);
                     } else {
                         saved = await Config.findOneAndUpdate(
                             {tag: item.tag },
                             { ...item }, 
                             { new: true }
                         );
-                        console.log("No Rec",saved);
+                        // console.log("No Rec",saved);
                     }
                 }
                 catch(err){
@@ -208,8 +208,21 @@ router.put("/stars/display/:id", async (req, res) => {
             $set: req.body
         },{new: true});
 
-        log.info(`200 || "Updated User" - ${req.method} - ${req.ip}`);
-        res.status(200).json({success: true, ...updatedUser});
+        log.info(`200 || "Updated Video" - ${req.method} - ${req.ip}`);
+        res.status(200).json({success: true, ...confObj});
+    } catch (err) {
+        log.error(`500 || ${err || "Internal server error"} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+        res.status(500).json({success: false, "error": "Internal server Error"});
+    }
+})
+
+//Get video
+router.get("/watch/:id", async (req, res) => {
+    try{
+        const obj = await Config.findById(req.params.id);
+
+        log.info(`200 || "Got video" - ${req.method} - ${req.ip}`);
+        res.status(200).json({success: true, ...obj});
     } catch (err) {
         log.error(`500 || ${err || "Internal server error"} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
         res.status(500).json({success: false, "error": "Internal server Error"});

@@ -24,7 +24,19 @@ const ConfigSchema = new mongoose.Schema(
         display: {
             type: Number,
             default: null
-        }
+        },
+        one: {
+            type: String,
+            default: null
+        },
+        two: {
+            type: String,
+            default: null
+        },
+        three: {
+            type: String,
+            default: null
+        },
     },
     {
         timestamps: true
