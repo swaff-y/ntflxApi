@@ -5,6 +5,7 @@ require("dotenv").config();
 const base = "/api/v1/";
 const configRoute = require("./routes/config");
 const authRoute = require("./routes/auth");
+const mockRoute = require("./routes/mock");
 const log = require("./logger");
 const cors = require("cors");
 
@@ -35,6 +36,7 @@ const corsOpts = {
 try {
     app.use(cors(corsOpts));
     app.use(base+"config", configRoute);
+    app.use(base+"mock", mockRoute);
     app.use(base+"auth", authRoute);
 } catch (error) {
     log.error(`Fatal || ${ "Error on routes - " + error || "Internal server error"}`);

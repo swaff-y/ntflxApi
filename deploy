@@ -13,6 +13,7 @@ scp ~/sei/projects/ntflx/backEnd/startServer swaff@raspberrypi:~/backend/
 scp ~/sei/projects/ntflx/backEnd/stopServer swaff@raspberrypi:~/backend/
 scp -r ~/sei/projects/ntflx/backEnd/models swaff@raspberrypi:~/backend/
 scp -r ~/sei/projects/ntflx/backEnd/routes swaff@raspberrypi:~/backend/
+scp -r ~/sei/projects/ntflx/backEnd/html swaff@raspberrypi:~/backend/
 
 echo "ssh into box and start server"
 ssh -l ${USERNAME} ${HOSTNAME} "${SCRIPT}"
