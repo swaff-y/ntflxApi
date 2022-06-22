@@ -37,6 +37,14 @@ const ConfigSchema = new mongoose.Schema(
             type: String,
             default: null
         },
+        bio: {
+            type: String,
+            default: null
+        },
+        duration: {
+            type: String,
+            default: null
+        }
     },
     {
         timestamps: true
