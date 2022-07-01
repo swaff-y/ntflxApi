@@ -2,18 +2,18 @@
 
 SCRIPT="cd backend; npm i; mkdir logs; cd logs; touch logger.log; cd ..; ./stopServer; ./startServer"
 USERNAME=swaff
-HOSTNAME=raspberrypi
+HOSTNAME=10.0.0.90
 
 echo "Deploying API...."
-scp ~/sei/projects/ntflx/backEnd/index.js swaff@raspberrypi:~/backend/
-scp ~/sei/projects/ntflx/backEnd/logger.js swaff@raspberrypi:~/backend/
-scp ~/sei/projects/ntflx/backEnd/package.json swaff@raspberrypi:~/backend/
-scp ~/sei/projects/ntflx/backEnd/package-lock.json swaff@raspberrypi:~/backend/
-scp ~/sei/projects/ntflx/backEnd/startServer swaff@raspberrypi:~/backend/
-scp ~/sei/projects/ntflx/backEnd/stopServer swaff@raspberrypi:~/backend/
-scp -r ~/sei/projects/ntflx/backEnd/models swaff@raspberrypi:~/backend/
-scp -r ~/sei/projects/ntflx/backEnd/routes swaff@raspberrypi:~/backend/
-scp -r ~/sei/projects/ntflx/backEnd/html swaff@raspberrypi:~/backend/
+scp ~/sei/projects/ntflx/backEnd/index.js swaff@10.0.0.90:~/backend/
+scp ~/sei/projects/ntflx/backEnd/logger.js swaff@10.0.0.90:~/backend/
+scp ~/sei/projects/ntflx/backEnd/package.json swaff@10.0.0.90:~/backend/
+scp ~/sei/projects/ntflx/backEnd/package-lock.json swaff@10.0.0.90:~/backend/
+scp ~/sei/projects/ntflx/backEnd/startServer swaff@10.0.0.90:~/backend/
+scp ~/sei/projects/ntflx/backEnd/stopServer swaff@10.0.0.90:~/backend/
+scp -r ~/sei/projects/ntflx/backEnd/models swaff@10.0.0.90:~/backend/
+scp -r ~/sei/projects/ntflx/backEnd/routes swaff@10.0.0.90:~/backend/
+scp -r ~/sei/projects/ntflx/backEnd/html swaff@10.0.0.90:~/backend/
 
 echo "ssh into box and start server"
 ssh -l ${USERNAME} ${HOSTNAME} "${SCRIPT}"

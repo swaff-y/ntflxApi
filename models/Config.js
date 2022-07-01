@@ -44,6 +44,10 @@ const ConfigSchema = new mongoose.Schema(
         duration: {
             type: String,
             default: null
+        },
+        viewCount: {
+            type: Number,
+            default: 0
         }
     },
     {
