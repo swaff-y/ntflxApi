@@ -100,20 +100,23 @@ router.get("/build", async (req, res) => {
     try{
             const obj = await listAllKeys({Bucket: process.env.BUCKET});
             const arr = categories(obj);
+
+            // console.log(arr);
             
             let retArr = [];
             arr?.forEach(async (item)=>{
                 try{      
-                    const rec = await Config.findOne({tag: item.tag});
+                    const rec = await Config.findOne({tag: item.tag, name: item.name});
                     let saved = null;
+                    // if(item.category === "movies") console.log(item.name, rec.name, item.tag);
                     if(!rec){
                         const conf = new Config(item);
                         saved = await conf.save();
-                        // console.log("Rec",saved);
+                        console.log("Rec",saved);
                     } else {
                         saved = await Config.findOneAndUpdate(
-                            {tag: item.tag },
-                            { ...item }, 
+                            {tag: item.tag, name: item.name },
+                            { ...item, newVideo: false, display: null }, 
                             { new: true }
                         );
                         // console.log("No Rec",saved);
@@ -138,9 +141,10 @@ router.get("/build", async (req, res) => {
 router.get("/stars" , async (req, res) => {
     // const qCategory = req.query.category;
     try{
-        let stars;
-
-        stars = await Config.find({category: "stars"})
+        // stars = await Config.find({category: "stars"})
+        const stars = await Config.aggregate([
+            {$match: {category: "stars"}},
+            {$sample: {size: 50}}])
 
         if(stars)
         {
@@ -148,6 +152,26 @@ router.get("/stars" , async (req, res) => {
             res.status(200).json(stars);
         } else {
             throw "Stars does not exist";
+        }
+    } catch (err) {
+        log.error(`500 || ${err || "Internal server error"} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+        res.status(500).json({success: false, "error": err});
+    }
+});
+
+//GET movies
+router.get("/movies" , async (req, res) => {
+    try{
+        let movies;
+
+        movies = await Config.find({category: "movies"})
+
+        if(movies)
+        {
+            log.info(`200 || "Got All movies" - ${req.method} - ${req.ip} - "category: movies"`);
+            res.status(200).json(movies);
+        } else {
+            throw "Movies does not exist";
         }
     } catch (err) {
         log.error(`500 || ${err || "Internal server error"} - ${req.originalUrl} - ${req.method} - ${req.ip}`);

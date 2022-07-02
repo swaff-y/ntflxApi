@@ -52,6 +52,10 @@ const ConfigSchema = new mongoose.Schema(
         likeCount: {
             type: Number,
             default: 0
+        },
+        newVideo: {
+            type: Boolean,
+            default: true
         }
     },
     {
