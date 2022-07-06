@@ -178,6 +178,24 @@ router.get("/movies" , async (req, res) => {
         res.status(500).json({success: false, "error": err});
     }
 });
+//GET series
+router.get("/series" , async (req, res) => {
+    try{
+        let series;
+        series = await Config.find({category: "series"})
+
+        if(series)
+        {
+            log.info(`200 || "Got All series" - ${req.method} - ${req.ip} - "category: movies"`);
+            res.status(200).json(series);
+        } else {
+            throw "Series does not exist";
+        }
+    } catch (err) {
+        log.error(`500 || ${err || "Internal server error"} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+        res.status(500).json({success: false, "error": err});
+    }
+});
 
 //GET display
 router.get("/stars/display" , async (req, res) => {
