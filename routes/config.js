@@ -196,6 +196,44 @@ router.get("/series" , async (req, res) => {
         res.status(500).json({success: false, "error": err});
     }
 });
+//GET new
+router.get("/new" , async (req, res) => {
+    try{
+        let newVids;
+        newVids = await Config.find({newVideo: true})
+
+        if(newVids)
+        {
+            log.info(`200 || "Got All new vids" - ${req.method} - ${req.ip} - "category: new"`);
+            res.status(200).json(newVids);
+        } else {
+            throw "New does not exist";
+        }
+    } catch (err) {
+        log.error(`500 || ${err || "Internal server error"} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+        res.status(500).json({success: false, "error": err});
+    }
+});
+
+//GET popular
+router.get("/popular" , async (req, res) => {
+    try{
+        let popular, liked;
+        popular = await Config.find({viewCount: {$gt: 0}}).sort({viewCount:-1}).limit(25);
+        liked = await Config.find({likeCount: {$gt: 0}}).sort({likeCount:-1}).limit(25);
+
+        if(popular)
+        {
+            log.info(`200 || "Got All popular" - ${req.method} - ${req.ip} - "category: popular"`);
+            res.status(200).json([...popular, ...liked]);
+        } else {
+            throw "Popular does not exist";
+        }
+    } catch (err) {
+        log.error(`500 || ${err || "Internal server error"} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+        res.status(500).json({success: false, "error": err});
+    }
+});
 
 //GET display
 router.get("/stars/display" , async (req, res) => {
