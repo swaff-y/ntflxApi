@@ -100,8 +100,6 @@ router.get("/build", async (req, res) => {
     try{
             const obj = await listAllKeys({Bucket: process.env.BUCKET});
             const arr = categories(obj);
-
-            // console.log(arr);
             
             let retArr = [];
             arr?.forEach(async (item)=>{
@@ -244,7 +242,8 @@ router.get("/stars/display" , async (req, res) => {
         display = await Config.find({category: "stars", display: {$gte: dateStamp}});
 
         if(!display){
-            throw "Stars does not exist";
+            res.status(500).json({success: false, "error": err});
+            // throw "Stars does not exist";
         }
         else if(display.length > 0)
         {
@@ -254,8 +253,8 @@ router.get("/stars/display" , async (req, res) => {
         else {
             log.info(`"Creating a new display" - ${req.method} - ${req.ip} - "category: starsDisplay"`);
             stars = await Config.find({category: "stars"});
-            const uniqueArr = uniqueArray(stars || []);
-            const randomArr = randomArray(uniqueArr, 8);
+            const uniqueArr = await uniqueArray(stars || []);
+            const randomArr = await randomArray(uniqueArr, 8);
 
             const retArr = [];
             randomArr.forEach(async (item)=>{
