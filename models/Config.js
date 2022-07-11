@@ -9,6 +9,9 @@ const ConfigSchema = new mongoose.Schema(
         name: {
             type: String
         },
+        fullName: {
+            type: String
+        },
         url: {
             type: String,
             required: true
@@ -62,5 +65,5 @@ const ConfigSchema = new mongoose.Schema(
         timestamps: true
     }
 )
-
+ConfigSchema.index({fullName:"text"});
 module.exports = mongoose.model("Conf",ConfigSchema);

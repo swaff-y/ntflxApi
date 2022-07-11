@@ -5,6 +5,12 @@ var AWS = require('aws-sdk');
 AWS.config.update({region: 'ap-southeast-2'});
 s3 = new AWS.S3({apiVersion: '2006-03-01'});
 
+const splitCamelCase = (str) => {
+    if(typeof str !== "string") return;
+    let string = str.replace(/([a-z])([A-Z])/g, '$1 $2');
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 const listAllKeys = (params, out = []) => new Promise((resolve, reject) => {
   s3.listObjectsV2(params).promise()
     .then(({Contents, IsTruncated, NextContinuationToken}) => {
@@ -102,6 +108,7 @@ router.get("/build", async (req, res) => {
             const arr = categories(obj);
             
             let retArr = [];
+            let timeO = null;
             arr?.forEach(async (item)=>{
                 try{      
                     const rec = await Config.findOne({tag: item.tag, name: item.name});
@@ -110,14 +117,31 @@ router.get("/build", async (req, res) => {
                     if(!rec){
                         const conf = new Config(item);
                         saved = await conf.save();
-                        console.log("Rec",saved);
+                        if(saved)
+                        {
+                            saved = await Config.findOneAndUpdate(
+                                {tag: item.tag, name: item.name  },
+                                { ...item, fullName: splitCamelCase(item.name) }, 
+                                { new: true }
+                            );
+                        }
                     } else {
                         saved = await Config.findOneAndUpdate(
-                            {tag: item.tag, name: item.name },
-                            { ...item, newVideo: false, display: null }, 
+                            {tag: item.tag, name: item.name  },
+                            { ...item, newVideo: false, display: null, fullName: splitCamelCase(item.name) }, 
                             { new: true }
                         );
                         // console.log("No Rec",saved);
+                    }
+                    if(saved){
+                        retArr.push(saved);
+                        if(timeO) clearTimeout(timeO);
+                        timeO = setTimeout(async ()=>{
+                            // var index = await Config.createIndexes();
+                            res.status(200).json({success: "true"});
+                            console.log("teh index",index)
+                            log.info(`200 || "Config Sent" - ${req.method} - ${req.ip}`);
+                        },500)
                     }
                 }
                 catch(err){
@@ -125,9 +149,10 @@ router.get("/build", async (req, res) => {
                 }
             })
 
-            res.status(200).json({success: "true"});
-            gotten = obj;
-            log.info(`200 || "Config Sent" - ${req.method} - ${req.ip}`);
+            // Config.createIndexes({fullName:"text"});
+            // res.status(200).json({success: "true"});
+            // gotten = obj;
+            // log.info(`200 || "Config Sent" - ${req.method} - ${req.ip}`);
     }
     catch (err){
          log.error(`500 || ${err || "Internal server error"} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
@@ -233,6 +258,25 @@ router.get("/popular" , async (req, res) => {
     }
 });
 
+//GET search
+router.get("/search" , async (req, res) => {
+    try{
+        let searched;
+        searched = await Config.find({ $text: { $search: req?.query?.fullName || "" }});
+
+        if(searched)
+        {
+            log.info(`200 || "Got All searched" - ${req.method} - ${req.ip} - "category: searched"`);
+            res.status(200).json(searched);
+        } else {
+            throw "Searched does not exist";
+        }
+    } catch (err) {
+        log.error(`500 || ${err || "Internal server error"} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+        res.status(500).json({success: false, "error": err});
+    }
+});
+
 //GET display
 router.get("/stars/display" , async (req, res) => {
     try{
@@ -253,8 +297,11 @@ router.get("/stars/display" , async (req, res) => {
         else {
             log.info(`"Creating a new display" - ${req.method} - ${req.ip} - "category: starsDisplay"`);
             stars = await Config.find({category: "stars"});
+            log.info(`"1. Got stars" - ${req.method} - ${req.ip} - "category: starsDisplay"`);
             const uniqueArr = await uniqueArray(stars || []);
+            log.info(`"2. Got unique Array" - ${req.method} - ${req.ip} - "category: starsDisplay"`);
             const randomArr = await randomArray(uniqueArr, 8);
+            log.info(`"3. Got random Array" - ${req.method} - ${req.ip} - "category: starsDisplay"`);
 
             const retArr = [];
             randomArr.forEach(async (item)=>{
