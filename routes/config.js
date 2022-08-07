@@ -139,7 +139,6 @@ router.get("/build", async (req, res) => {
                         timeO = setTimeout(async ()=>{
                             // var index = await Config.createIndexes();
                             res.status(200).json({success: "true"});
-                            console.log("teh index",index)
                             log.info(`200 || "Config Sent" - ${req.method} - ${req.ip}`);
                         },500)
                     }

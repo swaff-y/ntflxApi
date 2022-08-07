@@ -37,7 +37,7 @@ router.post("/register", async (req, res) => {
 
         const savedUser = await newUser.save();
         log.info(`200 || "Customer Registered" - ${req.method} - ${req.ip}`);
-        res.status(200).json({success: false, ...savedUser});
+        res.status(200).json({success: true, ...savedUser._doc});
     } catch (err) {
         log.error(`500 || ${err} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
         res.status(500).json({success: false, error: err});
@@ -88,7 +88,7 @@ router.post("/login", async (req, res) => {
             res.status(400).json({success: false, error: "Wrong Credintials"});
         } else {
             log.error(`500 || "Internal server error" - ${req.originalUrl} - ${req.method} - ${req.ip}`);
-            res.status(500).json({success: false, "error": "Internal server Error"});
+            res.status(500).json({success: false, "error": "Internal server Error", "message": err});
         }
 
     }
